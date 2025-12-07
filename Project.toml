@@ -1,0 +1,6 @@
+[deps]
+ControlSystems = "a505178d-3554-515a-a43a-c4046c8b93f0"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Plots = "91a5bc22-355b-5f05-9256-1463a69a47a7"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae229a234a5"

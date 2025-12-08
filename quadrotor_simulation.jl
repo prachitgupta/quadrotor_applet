@@ -23,8 +23,6 @@ begin
 	            using ControlSystems
 	            using DifferentialEquations
 	            using Plots
-	            using FFMPEG # Added for animation GIF generation
-	            Plots.default(size=(800, 600), legend=:outertopright) # Set default plot size and legend position
 	            md"# Educational Applet: Comparative Control Analysis of a 6-DOF Planar Quadrotor System
 	This applet is designed for **educational purposes** to teach control systems fundamentals, system dynamics, Lyapunov stability analysis, and the formulation of controllers like LQR and feedback linearization.
 	"
@@ -220,12 +218,22 @@ md"## Interactive Comparison"
 
 # ╔═╡ b73b1d2a-d334-11f0-8674-2b4d2873db64
 begin
+    md"**Select Controller:**"
     @bind controller_choice PlutoUI.Radio(["LQR", "Feedback Linearization"], default="LQR")
-    @bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Y Position (m)")
-    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Z Position (m)")
-    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true, title="Initial Angle (rad)")
-    @bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Y Position (m)")
-    @bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Z Position (m)")
+
+    md"**Initial Conditions:**"
+    md"Initial Y Position (m):"
+    @bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true)
+    md"Initial Z Position (m):"
+    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true)
+    md"Initial Angle (rad):"
+    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true)
+
+    md"**Goal Position:**"
+    md"Goal Y Position (m):"
+    @bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true)
+    md"Goal Z Position (m):"
+    @bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true)
 end
 
 
@@ -258,12 +266,38 @@ $$ g(x) = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ 0 & 0 \\ -\frac{\sin \theta}{m} & 0 
 md"""
 ## Project Objectives
 
-### 1. Stability Analysis
+### 1. Stability Analysis (Detailed)
 
-*Use Lyapunov theory to prove that the unforced system with $u = [mg, 0]^T$ is unstable around any hover equilibrium $x_e = [d, h, 0, 0, 0, 0]^T$.*
+The stability of the unforced planar quadrotor system (when control inputs are constant at hover: $F = mg$, $M = 0$) around a hover equilibrium $x_e = [d, h, 0, 0, 0, 0]^T$ (where $d$ and $h$ are constant position values) can be analyzed using Lyapunov theory. For an **underactuated** system like the quadrotor, where there are fewer control inputs than degrees of freedom, achieving global asymptotic stability to a point can be challenging or impossible if the equilibrium is non-hyperbolic.
 
-**Derivation Hint:**
-For Lyapunov stability analysis, one typically defines a Lyapunov candidate function $V(x)$ such that $V(x) > 0$ for $x \ne x_e$ and $V(x_e) = 0$. The derivative $\dot{V}(x)$ along the system trajectories must be negative definite or negative semi-definite for stability. For instability, one might show that $\dot{V}(x)$ is positive definite in some region, or use Chetaev's instability theorem.
+In this case, the hover equilibrium is **unstable**. Intuitively, this is because the horizontal position ($y$) is only controllable through changes in the pitch angle ($\theta$). If the quadrotor is at a desired horizontal position but has any horizontal velocity, a perfectly vertical thrust ($F=mg, \theta=0$) will not correct this velocity. To move horizontally, the quadrotor must tilt ($\theta \neq 0$), which then means the vertical thrust component ($F \cos\theta$) is less than $mg$, causing it to fall, or the vertical thrust component is greater than $mg$, causing it to accelerate upwards. This coupling makes stabilizing both horizontal position and attitude simultaneously at $y=0, \theta=0$ difficult.
+
+**Sketch of Proof for Instability using Lyapunov Theory (or related concepts):**
+
+Consider the system dynamics:
+$m\ddot{y} = -F \sin \theta$
+$m\ddot{z} = F \cos \theta - mg$
+$J\ddot{\theta} = M$
+
+At the hover equilibrium, $F = mg$ and $M = 0$. The state is $x_e = [d, h, 0, 0, 0, 0]^T$.
+Let's analyze the dynamics around this equilibrium. The equations for $y$ and $\theta$ are particularly insightful for instability.
+
+If we consider small perturbations around the equilibrium, a common approach for analyzing instability is to examine the linearized system eigenvalues. However, for a formal proof of instability of the *nonlinear* system, a Lyapunov-based approach like **Chetaev's Instability Theorem** is often used.
+
+A simple demonstration of instability can be made by noting the implications of underactuation:
+1.  **Horizontal dynamics:** The $\ddot{y}$ equation depends on $\sin\theta$. If $\theta=0$ (desired hover attitude), then $\ddot{y}=0$, meaning any non-zero $\dot{y}$ cannot be directly counteracted if $\theta$ is fixed at zero. This suggests that without tilting, horizontal position is not directly controllable to zero velocity if it starts with one.
+2.  **Coupling:** To control $y$, $\theta$ must be non-zero. But a non-zero $\theta$ affects $z$ dynamics (unless $F$ is dynamically adjusted).
+
+For a formal proof of instability using Chetaev's Theorem, one would typically:
+*   Identify an equilibrium point (e.g., $x_e = [0, 0, 0, 0, 0, 0]^T$ for simplicity after coordinate transformation).
+*   Find a continuously differentiable function $V(x)$ (a "Chetaev function") such that:
+    *   $V(x_e) = 0$.
+    *   In an arbitrarily small neighborhood $U$ of $x_e$, there exists a region $V_0 = \{x \in U \mid V(x) > 0 \}$ such that $\dot{V}(x) > 0$ for all $x \in V_0$.
+*   This would imply that starting in $V_0$, the system state will move away from the equilibrium.
+
+For the planar quadrotor, such a function $V(x)$ might relate to the horizontal kinetic energy or potential energy related to pitch, demonstrating that any slight deviation in horizontal velocity or pitch angle, without immediate correcting action, leads to an increase in this "energy" function, driving the system away from equilibrium. The constant $u=[mg, 0]^T$ in the unforced system context means no active control is applied to stabilize deviations, thus leading to instability.
+
+The underactuation (3 DOFs but only 2 independent controls, $F$ and $M$) is key. The number of independent controls is less than the number of generalized coordinates (y, z, theta), making it impossible to arbitrarily choose accelerations for all coordinates directly.
 """
 
 # ╔═╡ 4a4a4a4a-4a4a-4a4a-4a4a-4a4a4a4a4a4a
@@ -330,8 +364,6 @@ This project will provide a comprehensive comparison between linearization-based
 
 # ╔═╡ 8e8e8e8e-8e8e-8e8e-8e8e-8e8e8e8e8e8e
 begin
-    using Plots # Explicitly ensuring Plots is available within this block
-
     # Quadrotor visual parameters
     const QL = 0.5  # Quadrotor body length
     const QW = 0.1  # Quadrotor body width (height in 2D view)
@@ -3210,7 +3242,7 @@ version = "1.13.0+0"
 # ╠═b73b1d0a-d334-11f0-91e4-158bb91b2078
 # ╟─b73b1d0a-d334-11f0-b11e-6b4049c422d0
 # ╠═b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
-# ╠═b73b1d2a-d334-11f0-9c70-ef1d46d46fad
+# ╟─b73b1d2a-d334-11f0-9c70-ef1d46d46fad
 # ╠═b73b1d2a-d334-11f0-8674-2b4d2873db64
 # ╠═b73b1d32-d334-11f0-a406-2f5eae2c8365
 # ╠═1f1d1f1d-1f1d-1f1d-1f1d-1f1d1f1d1f1d

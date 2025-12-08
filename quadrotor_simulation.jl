@@ -23,47 +23,12 @@ begin
 	            using ControlSystems
 	            using DifferentialEquations
 	            using Plots
+	            using FFMPEG # Added for animation GIF generation
+	            Plots.default(size=(800, 600), legend=:outertopright) # Set default plot size and legend position
 	            md"# Educational Applet: Comparative Control Analysis of a 6-DOF Planar Quadrotor System
 	This applet is designed for **educational purposes** to teach control systems fundamentals, system dynamics, Lyapunov stability analysis, and the formulation of controllers like LQR and feedback linearization.
 	"
 end
-
-# ╔═╡ 1f1d1f1d-1f1d-1f1d-1f1d-1f1d1f1d1f1d
-md"""
-## Motivation
-
-The planar quadrotor represents a fundamental **underactuated system** where horizontal motion is achieved indirectly through attitude changes. This coupling between lateral position and pitch angle presents significant control challenges, making it an ideal platform to compare linear and nonlinear control techniques. Understanding the **limitations of linearization-based methods** versus **exact feedback linearization** provides crucial insights for real-world autonomous flight applications.
-"""
-
-# ╔═╡ 2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
-md"""
-## System Description
-
-We consider a 6-DOF planar quadrotor with **state vector** $x = [y, z, \theta, \dot{y}, \dot{z}, \dot{\theta}]^T$ and **control inputs** $u = [F, M]^T$ (thrust and torque).
-
-The system dynamics are:
-$$ m\ddot{y} = -F \sin \theta $$
-$$ m\ddot{z} = F \cos \theta - mg $$
-$$ J\ddot{\theta} = M $$
-
-In **control-affine form**: $\dot{x} = f(x) + g(x)u$, where:
-
-$$ f(x) = \begin{bmatrix} \dot{y} \\ \dot{z} \\ \dot{\theta} \\ 0 \\ -g \\ 0 \end{bmatrix} $$
-
-$$ g(x) = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ 0 & 0 \\ -\frac{\sin \theta}{m} & 0 \\ \frac{\cos \theta}{m} & 0 \\ 0 & \frac{1}{J} \end{bmatrix} $$
-"""
-
-# ╔═╡ 3f3f3f3f-3f3f-3f3f-3f3f-3f3f3f3f3f3f
-md"""
-## Project Objectives
-
-### 1. Stability Analysis
-
-*Use Lyapunov theory to prove that the unforced system with $u = [mg, 0]^T$ is unstable around any hover equilibrium $x_e = [d, h, 0, 0, 0, 0]^T$.*
-
-**Derivation Hint:**
-For Lyapunov stability analysis, one typically defines a Lyapunov candidate function $V(x)$ such that $V(x) > 0$ for $x \ne x_e$ and $V(x_e) = 0$. The derivative $\dot{V}(x)$ along the system trajectories must be negative definite or negative semi-definite for stability. For instability, one might show that $\dot{V}(x)$ is positive definite in some region, or use Chetaev's instability theorem.
-"""
 
 # ╔═╡ b73b1cc4-d334-11f0-ab0f-bd913350d1bd
 md"## System Parameters"
@@ -107,23 +72,6 @@ end
 end
 
 
-# ╔═╡ 4a4a4a4a-4a4a-4a4a-4a4a-4a4a4a4a4a4a
-md"""
-### 2. LQR Control
-
-*Linearize the system around hover equilibrium and design an LQR controller. Demonstrate stabilization performance and identify the limitations arising from linearization approximations (e.g., restricted region of attraction, performance degradation for large angles).*
-
-**Derivation Hint:**
-1.  **Linearization:** Linearize the nonlinear system $\dot{x} = f(x) + g(x)u$ around an equilibrium point $(x_e, u_e)$.
-    The linearized system is $\dot{\delta}x = A\delta x + B\delta u$, where $\delta x = x - x_e$ and $\delta u = u - u_e$.
-    $A = \frac{\partial f}{\partial x}|_{x_e, u_e} + \frac{\partial g}{\partial x}|_{x_e, u_e} u_e$
-    $B = g(x_e)$
-2.  **LQR Controller Design:** For the linearized system, find the control law $\delta u = -K\delta x$ that minimizes the quadratic cost function:
-    $J = \int_0^\infty (\delta x^T Q \delta x + \delta u^T R \delta u) dt$
-    The gain matrix $K$ is given by $K = R^{-1} B^T P$, where $P$ is the unique positive definite solution to the Algebraic Riccati Equation (ARE):
-    $A^T P + P A - P B R^{-1} B^T P + Q = 0$
-"""
-
 # ╔═╡ b73b1d00-d334-11f0-99ae-794d3ac300fb
 md"## LQR Controller"
 
@@ -158,35 +106,6 @@ begin
     lqr_controller(x, r) = u_eq - K_lqr * (x - r)
 end
 
-
-# ╔═╡ 5b5b5b5b-5b5b-5b5b-5b5b-5b5b5b5b5b5b
-md"""
-### 3. Feedback Linearization
-
-*Apply exact feedback linearization to transform the nonlinear system into a linear form without approximations. Design controllers for the linearized subsystems and demonstrate trajectory tracking capabilities.*
-
-**Derivation Hint:**
-Feedback linearization involves finding a diffeomorphism $z = T(x)$ and a control law $u = \alpha(x) + \beta(x)v$ such that the transformed system $\dot{z} = Az + Bv$ is linear. For a single-input single-output (SISO) system, this typically involves finding the relative degree $r$ and using Lie derivatives. For MIMO systems, it's more complex, often involving input-output linearization or full state linearization.
-
-For the planar quadrotor, we can decouple the altitude ($z$) and lateral position ($y$) control.
-
-**Altitude ($z$) Subsystem:**
-Let $z_1 = z$ and $z_2 = \dot{z}$.
-$\dot{z}_1 = z_2$
-$\dot{z}_2 = \ddot{z} = \frac{F \cos \theta}{m} - g$
-We can define a virtual control input $v_z = \frac{F \cos \theta}{m} - g$.
-Then $\ddot{z} = v_z$. We can design a linear controller for $v_z$ (e.g., pole placement) to control $z$.
-The control input $F$ can then be found from $F = \frac{m(v_z + g)}{\cos \theta}$.
-
-**Lateral Position ($y$) Subsystem:**
-Let $y_1 = y$, $y_2 = \dot{y}$, $y_3 = \theta$, $y_4 = \dot{\theta}$. This transformation is more intricate, involving the dynamics of $y$ and $\theta$.
-The approach often taken is to define the output as $h_y(x) = y$.
-$L_f h_y = \dot{y}$
-$L_f^2 h_y = \ddot{y} = -\frac{F \sin \theta}{m}$
-This is where the direct control input $F$ appears. To linearize the $y$ dynamics, we typically need to control the attitude $\theta$. This leads to a cascaded control structure where $F$ controls $z$ and $M$ controls $\theta$ (which in turn affects $y$).
-
-The implementation details involve careful selection of states for linearization and designing pole-placement controllers for each linearized subsystem, as seen in the provided MATLAB and Julia code.
-"""
 
 # ╔═╡ b73b1d0a-d334-11f0-8595-a32dfd67de55
 md"## Feedback Linearization Controller"
@@ -283,6 +202,116 @@ end
 end
 
 
+# ╔═╡ b73b1d0a-d334-11f0-b11e-6b4049c422d0
+md"## Simulation"
+
+# ╔═╡ b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
+begin
+function simulate(controller, x0, t_span, r)
+    prob = ODEProblem((dx, x, p, t) -> planar_quadrotor_dynamics!(dx, x, p, t, controller, r), x0, t_span)
+    sol = solve(prob, Tsit5())
+    return sol
+end
+end
+
+
+# ╔═╡ b73b1d2a-d334-11f0-9c70-ef1d46d46fad
+md"## Interactive Comparison"
+
+# ╔═╡ b73b1d2a-d334-11f0-8674-2b4d2873db64
+begin
+    @bind controller_choice PlutoUI.Radio(["LQR", "Feedback Linearization"], default="LQR")
+    @bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Y Position (m)")
+    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Z Position (m)")
+    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true, title="Initial Angle (rad)")
+    @bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Y Position (m)")
+    @bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Z Position (m)")
+end
+
+
+# ╔═╡ 1f1d1f1d-1f1d-1f1d-1f1d-1f1d1f1d1f1d
+md"""
+## Motivation
+
+The planar quadrotor represents a fundamental **underactuated system** where horizontal motion is achieved indirectly through attitude changes. This coupling between lateral position and pitch angle presents significant control challenges, making it an ideal platform to compare linear and nonlinear control techniques. Understanding the **limitations of linearization-based methods** versus **exact feedback linearization** provides crucial insights for real-world autonomous flight applications.
+"""
+
+# ╔═╡ 2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
+md"""
+## System Description
+
+We consider a 6-DOF planar quadrotor with **state vector** $x = [y, z, \theta, \dot{y}, \dot{z}, \dot{\theta}]^T$ and **control inputs** $u = [F, M]^T$ (thrust and torque).
+
+The system dynamics are:
+$$ m\ddot{y} = -F \sin \theta $$
+$$ m\ddot{z} = F \cos \theta - mg $$
+$$ J\ddot{\theta} = M $$
+
+In **control-affine form**: $\dot{x} = f(x) + g(x)u$, where:
+
+$$ f(x) = \begin{bmatrix} \dot{y} \\ \dot{z} \\ \dot{\theta} \\ 0 \\ -g \\ 0 \end{bmatrix} $$
+
+$$ g(x) = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ 0 & 0 \\ -\frac{\sin \theta}{m} & 0 \\ \frac{\cos \theta}{m} & 0 \\ 0 & \frac{1}{J} \end{bmatrix} $$
+"""
+
+# ╔═╡ 3f3f3f3f-3f3f-3f3f-3f3f-3f3f3f3f3f3f
+md"""
+## Project Objectives
+
+### 1. Stability Analysis
+
+*Use Lyapunov theory to prove that the unforced system with $u = [mg, 0]^T$ is unstable around any hover equilibrium $x_e = [d, h, 0, 0, 0, 0]^T$.*
+
+**Derivation Hint:**
+For Lyapunov stability analysis, one typically defines a Lyapunov candidate function $V(x)$ such that $V(x) > 0$ for $x \ne x_e$ and $V(x_e) = 0$. The derivative $\dot{V}(x)$ along the system trajectories must be negative definite or negative semi-definite for stability. For instability, one might show that $\dot{V}(x)$ is positive definite in some region, or use Chetaev's instability theorem.
+"""
+
+# ╔═╡ 4a4a4a4a-4a4a-4a4a-4a4a-4a4a4a4a4a4a
+md"""
+### 2. LQR Control
+
+*Linearize the system around hover equilibrium and design an LQR controller. Demonstrate stabilization performance and identify the limitations arising from linearization approximations (e.g., restricted region of attraction, performance degradation for large angles).*
+
+**Derivation Hint:**
+1.  **Linearization:** Linearize the nonlinear system $\dot{x} = f(x) + g(x)u$ around an equilibrium point $(x_e, u_e)$.
+    The linearized system is $\dot{\delta}x = A\delta x + B\delta u$, where $\delta x = x - x_e$ and $\delta u = u - u_e$.
+    $A = \frac{\partial f}{\partial x}|_{x_e, u_e} + \frac{\partial g}{\partial x}|_{x_e, u_e} u_e$
+    $B = g(x_e)$
+2.  **LQR Controller Design:** For the linearized system, find the control law $\delta u = -K\delta x$ that minimizes the quadratic cost function:
+    $J = \int_0^\infty (\delta x^T Q \delta x + \delta u^T R \delta u) dt$
+    The gain matrix $K$ is given by $K = R^{-1} B^T P$, where $P$ is the unique positive definite solution to the Algebraic Riccati Equation (ARE):
+    $A^T P + P A - P B R^{-1} B^T P + Q = 0$
+"""
+
+# ╔═╡ 5b5b5b5b-5b5b-5b5b-5b5b-5b5b5b5b5b5b
+md"""
+### 3. Feedback Linearization
+
+*Apply exact feedback linearization to transform the nonlinear system into a linear form without approximations. Design controllers for the linearized subsystems and demonstrate trajectory tracking capabilities.*
+
+**Derivation Hint:**
+Feedback linearization involves finding a diffeomorphism $z = T(x)$ and a control law $u = \alpha(x) + \beta(x)v$ such that the transformed system $\dot{z} = Az + Bv$ is linear. For a single-input single-output (SISO) system, this typically involves finding the relative degree $r$ and using Lie derivatives. For MIMO systems, it's more complex, often involving input-output linearization or full state linearization.
+
+For the planar quadrotor, we can decouple the altitude ($z$) and lateral position ($y$) control.
+
+**Altitude ($z$) Subsystem:**
+Let $z_1 = z$ and $z_2 = \dot{z}$.
+$\dot{z}_1 = z_2$
+$\dot{z}_2 = \ddot{z} = \frac{F \cos \theta}{m} - g$
+We can define a virtual control input $v_z = \frac{F \cos \theta}{m} - g$.
+Then $\ddot{z} = v_z$. We can design a linear controller for $v_z$ (e.g., pole placement) to control $z$.
+The control input $F$ can then be found from $F = \frac{m(v_z + g)}{\cos \theta}$.
+
+**Lateral Position ($y$) Subsystem:**
+Let $y_1 = y$, $y_2 = \dot{y}$, $y_3 = \theta$, $y_4 = \dot{\theta}$. This transformation is more intricate, involving the dynamics of $y$ and $\theta$.
+The approach often taken is to define the output as $h_y(x) = y$.
+$L_f h_y = \dot{y}$
+$L_f^2 h_y = \ddot{y} = -\frac{F \sin \theta}{m}$
+This is where the direct control input $F$ appears. To linearize the $y$ dynamics, we typically need to control the attitude $\theta$. This leads to a cascaded control structure where $F$ controls $z$ and $M$ controls $\theta$ (which in turn affects $y$).
+
+The implementation details involve careful selection of states for linearization and designing pole-placement controllers for each linearized subsystem, as seen in the provided MATLAB and Julia code.
+"""
+
 # ╔═╡ 6c6c6c6c-6c6c-6c6c-6c6c-6c6c6c6c6c6c
 md"""
 ### 4. Comparative Analysis
@@ -301,6 +330,8 @@ This project will provide a comprehensive comparison between linearization-based
 
 # ╔═╡ 8e8e8e8e-8e8e-8e8e-8e8e-8e8e8e8e8e8e
 begin
+    using Plots # Explicitly ensuring Plots is available within this block
+
     # Quadrotor visual parameters
     const QL = 0.5  # Quadrotor body length
     const QW = 0.1  # Quadrotor body width (height in 2D view)
@@ -337,33 +368,6 @@ begin
         plot!(p, prop2_coords_global[1,:], prop2_coords_global[2,:], seriestype=:line, c=color, linewidth=5, label="")
     end
 end
-
-# ╔═╡ b73b1d0a-d334-11f0-b11e-6b4049c422d0
-md"## Simulation"
-
-# ╔═╡ b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
-begin
-function simulate(controller, x0, t_span, r)
-    prob = ODEProblem((dx, x, p, t) -> planar_quadrotor_dynamics!(dx, x, p, t, controller, r), x0, t_span)
-    sol = solve(prob, Tsit5())
-    return sol
-end
-end
-
-
-# ╔═╡ b73b1d2a-d334-11f0-9c70-ef1d46d46fad
-md"## Interactive Comparison"
-
-# ╔═╡ b73b1d2a-d334-11f0-8674-2b4d2873db64
-begin
-    @bind controller_choice PlutoUI.Radio(["LQR", "Feedback Linearization"], default="LQR")
-    @bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Y Position (m)")
-    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Z Position (m)")
-    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true, title="Initial Angle (rad)")
-    @bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Y Position (m)")
-    @bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Z Position (m)")
-end
-
 
 # ╔═╡ b73b1d32-d334-11f0-a406-2f5eae2c8365
 begin
@@ -3195,19 +3199,27 @@ version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═b73b1c74-d334-11f0-8ca7-d3b012c552ea
-# ╠═b73b1cc4-d334-11f0-ab0f-bd913350d1bd
+# ╟─b73b1c74-d334-11f0-8ca7-d3b012c552ea
+# ╟─b73b1cc4-d334-11f0-ab0f-bd913350d1bd
 # ╠═b73b1cc4-d334-11f0-990a-b71c6c207d24
-# ╠═b73b1cce-d334-11f0-b624-cbadaea34f19
-# ╠═b73b1cf6-d334-11f0-a649-57d70532cf4f
-# ╠═b73b1d00-d334-11f0-99ae-794d3ac300fb
+# ╟─b73b1cce-d334-11f0-b624-cbadaea34f19
+# ╟─b73b1cf6-d334-11f0-a649-57d70532cf4f
+# ╟─b73b1d00-d334-11f0-99ae-794d3ac300fb
 # ╠═b73b1d00-d334-11f0-9895-fdc71285f626
-# ╠═b73b1d0a-d334-11f0-8595-a32dfd67de55
+# ╟─b73b1d0a-d334-11f0-8595-a32dfd67de55
 # ╠═b73b1d0a-d334-11f0-91e4-158bb91b2078
-# ╠═b73b1d0a-d334-11f0-b11e-6b4049c422d0
+# ╟─b73b1d0a-d334-11f0-b11e-6b4049c422d0
 # ╠═b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
 # ╠═b73b1d2a-d334-11f0-9c70-ef1d46d46fad
 # ╠═b73b1d2a-d334-11f0-8674-2b4d2873db64
 # ╠═b73b1d32-d334-11f0-a406-2f5eae2c8365
+# ╠═1f1d1f1d-1f1d-1f1d-1f1d-1f1d1f1d1f1d
+# ╠═2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
+# ╠═3f3f3f3f-3f3f-3f3f-3f3f-3f3f3f3f3f3f
+# ╠═4a4a4a4a-4a4a-4a4a-4a4a-4a4a4a4a4a4a
+# ╠═5b5b5b5b-5b5b-5b5b-5b5b-5b5b5b5b5b5b
+# ╠═6c6c6c6c-6c6c-6c6c-6c6c-6c6c6c6c6c6c
+# ╠═7d7d7d7d-7d7d-7d7d-7d7d-7d7d7d7d7d7d
+# ╠═8e8e8e8e-8e8e-8e8e-8e8e-8e8e8e8e8e8e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -23,14 +23,47 @@ begin
 	            using ControlSystems
 	            using DifferentialEquations
 	            using Plots
-	            md"# Comparative Control Analysis of a 6-DOF Planar Quadrotor System
-	This notebook implements and compares two control strategies for a 6-DOF planar quadrotor:
-	1.  **LQR (Linear-Quadratic Regulator) Control:** A linear control technique based on a linearized model of the system.
-	2.  **Feedback Linearization:** A nonlinear control technique that exactly linearizes the system dynamics.
-	The goal is to analyze the performance of these controllers in terms of stability, trajectory tracking, and robustness to large initial errors.
+	            md"# Educational Applet: Comparative Control Analysis of a 6-DOF Planar Quadrotor System
+	This applet is designed for **educational purposes** to teach control systems fundamentals, system dynamics, Lyapunov stability analysis, and the formulation of controllers like LQR and feedback linearization.
 	"
-	            
 end
+
+# ╔═╡ 1f1d1f1d-1f1d-1f1d-1f1d-1f1d1f1d1f1d
+md"""
+## Motivation
+
+The planar quadrotor represents a fundamental **underactuated system** where horizontal motion is achieved indirectly through attitude changes. This coupling between lateral position and pitch angle presents significant control challenges, making it an ideal platform to compare linear and nonlinear control techniques. Understanding the **limitations of linearization-based methods** versus **exact feedback linearization** provides crucial insights for real-world autonomous flight applications.
+"""
+
+# ╔═╡ 2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
+md"""
+## System Description
+
+We consider a 6-DOF planar quadrotor with **state vector** $x = [y, z, \theta, \dot{y}, \dot{z}, \dot{\theta}]^T$ and **control inputs** $u = [F, M]^T$ (thrust and torque).
+
+The system dynamics are:
+$$ m\ddot{y} = -F \sin \theta $$
+$$ m\ddot{z} = F \cos \theta - mg $$
+$$ J\ddot{\theta} = M $$
+
+In **control-affine form**: $\dot{x} = f(x) + g(x)u$, where:
+
+$$ f(x) = \begin{bmatrix} \dot{y} \\ \dot{z} \\ \dot{\theta} \\ 0 \\ -g \\ 0 \end{bmatrix} $$
+
+$$ g(x) = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ 0 & 0 \\ -\frac{\sin \theta}{m} & 0 \\ \frac{\cos \theta}{m} & 0 \\ 0 & \frac{1}{J} \end{bmatrix} $$
+"""
+
+# ╔═╡ 3f3f3f3f-3f3f-3f3f-3f3f-3f3f3f3f3f3f
+md"""
+## Project Objectives
+
+### 1. Stability Analysis
+
+*Use Lyapunov theory to prove that the unforced system with $u = [mg, 0]^T$ is unstable around any hover equilibrium $x_e = [d, h, 0, 0, 0, 0]^T$.*
+
+**Derivation Hint:**
+For Lyapunov stability analysis, one typically defines a Lyapunov candidate function $V(x)$ such that $V(x) > 0$ for $x \ne x_e$ and $V(x_e) = 0$. The derivative $\dot{V}(x)$ along the system trajectories must be negative definite or negative semi-definite for stability. For instability, one might show that $\dot{V}(x)$ is positive definite in some region, or use Chetaev's instability theorem.
+"""
 
 # ╔═╡ b73b1cc4-d334-11f0-ab0f-bd913350d1bd
 md"## System Parameters"
@@ -74,6 +107,23 @@ end
 end
 
 
+# ╔═╡ 4a4a4a4a-4a4a-4a4a-4a4a-4a4a4a4a4a4a
+md"""
+### 2. LQR Control
+
+*Linearize the system around hover equilibrium and design an LQR controller. Demonstrate stabilization performance and identify the limitations arising from linearization approximations (e.g., restricted region of attraction, performance degradation for large angles).*
+
+**Derivation Hint:**
+1.  **Linearization:** Linearize the nonlinear system $\dot{x} = f(x) + g(x)u$ around an equilibrium point $(x_e, u_e)$.
+    The linearized system is $\dot{\delta}x = A\delta x + B\delta u$, where $\delta x = x - x_e$ and $\delta u = u - u_e$.
+    $A = \frac{\partial f}{\partial x}|_{x_e, u_e} + \frac{\partial g}{\partial x}|_{x_e, u_e} u_e$
+    $B = g(x_e)$
+2.  **LQR Controller Design:** For the linearized system, find the control law $\delta u = -K\delta x$ that minimizes the quadratic cost function:
+    $J = \int_0^\infty (\delta x^T Q \delta x + \delta u^T R \delta u) dt$
+    The gain matrix $K$ is given by $K = R^{-1} B^T P$, where $P$ is the unique positive definite solution to the Algebraic Riccati Equation (ARE):
+    $A^T P + P A - P B R^{-1} B^T P + Q = 0$
+"""
+
 # ╔═╡ b73b1d00-d334-11f0-99ae-794d3ac300fb
 md"## LQR Controller"
 
@@ -108,6 +158,35 @@ begin
     lqr_controller(x, r) = u_eq - K_lqr * (x - r)
 end
 
+
+# ╔═╡ 5b5b5b5b-5b5b-5b5b-5b5b-5b5b5b5b5b5b
+md"""
+### 3. Feedback Linearization
+
+*Apply exact feedback linearization to transform the nonlinear system into a linear form without approximations. Design controllers for the linearized subsystems and demonstrate trajectory tracking capabilities.*
+
+**Derivation Hint:**
+Feedback linearization involves finding a diffeomorphism $z = T(x)$ and a control law $u = \alpha(x) + \beta(x)v$ such that the transformed system $\dot{z} = Az + Bv$ is linear. For a single-input single-output (SISO) system, this typically involves finding the relative degree $r$ and using Lie derivatives. For MIMO systems, it's more complex, often involving input-output linearization or full state linearization.
+
+For the planar quadrotor, we can decouple the altitude ($z$) and lateral position ($y$) control.
+
+**Altitude ($z$) Subsystem:**
+Let $z_1 = z$ and $z_2 = \dot{z}$.
+$\dot{z}_1 = z_2$
+$\dot{z}_2 = \ddot{z} = \frac{F \cos \theta}{m} - g$
+We can define a virtual control input $v_z = \frac{F \cos \theta}{m} - g$.
+Then $\ddot{z} = v_z$. We can design a linear controller for $v_z$ (e.g., pole placement) to control $z$.
+The control input $F$ can then be found from $F = \frac{m(v_z + g)}{\cos \theta}$.
+
+**Lateral Position ($y$) Subsystem:**
+Let $y_1 = y$, $y_2 = \dot{y}$, $y_3 = \theta$, $y_4 = \dot{\theta}$. This transformation is more intricate, involving the dynamics of $y$ and $\theta$.
+The approach often taken is to define the output as $h_y(x) = y$.
+$L_f h_y = \dot{y}$
+$L_f^2 h_y = \ddot{y} = -\frac{F \sin \theta}{m}$
+This is where the direct control input $F$ appears. To linearize the $y$ dynamics, we typically need to control the attitude $\theta$. This leads to a cascaded control structure where $F$ controls $z$ and $M$ controls $\theta$ (which in turn affects $y$).
+
+The implementation details involve careful selection of states for linearization and designing pole-placement controllers for each linearized subsystem, as seen in the provided MATLAB and Julia code.
+"""
 
 # ╔═╡ b73b1d0a-d334-11f0-8595-a32dfd67de55
 md"## Feedback Linearization Controller"
@@ -204,6 +283,61 @@ end
 end
 
 
+# ╔═╡ 6c6c6c6c-6c6c-6c6c-6c6c-6c6c6c6c6c6c
+md"""
+### 4. Comparative Analysis
+
+*Compare LQR and feedback linearization approaches in terms of region of attraction, tracking performance, and robustness.*
+
+This section will visually demonstrate the differences in performance between the two controllers, especially when operating far from equilibrium or attempting to track dynamic trajectories.
+"""
+
+# ╔═╡ 7d7d7d7d-7d7d-7d7d-7d7d-7d7d7d7d7d7d
+md"""
+## Expected Outcomes
+
+This project will provide a comprehensive comparison between linearization-based (LQR) and exact nonlinear (feedback linearization) control techniques. It will demonstrate that while LQR is effective near equilibrium, feedback linearization offers superior performance for large maneuvers and trajectory tracking. All results will be validated through MATLAB simulations with clear visualizations, making the project easily reproducible for evaluation purposes.
+"""
+
+# ╔═╡ 8e8e8e8e-8e8e-8e8e-8e8e-8e8e8e8e8e8e
+begin
+    # Quadrotor visual parameters
+    const QL = 0.5  # Quadrotor body length
+    const QW = 0.1  # Quadrotor body width (height in 2D view)
+    const PL = 0.3  # Propeller length
+    const PA = 0.2  # Propeller arm length (distance from center to propeller)
+
+    function draw_quadrotor!(p, y_pos, z_pos, theta_ori, color=:blue)
+        # Rotation matrix
+        R = [cos(theta_ori) -sin(theta_ori);
+             sin(theta_ori)  cos(theta_ori)]
+
+        # Body coordinates relative to center (0,0)
+        body_coords_local = [-QL/2  QL/2  QL/2 -QL/2 -QL/2;
+                             -QW/2 -QW/2  QW/2  QW/2 -QW/2]
+        
+        # Propeller 1 (left) coordinates relative to center (0,0)
+        prop1_center_local = [-PA, 0.0]
+        prop1_coords_local = [prop1_center_local[1] - PL/2  prop1_center_local[1] + PL/2;
+                              prop1_center_local[2]       prop1_center_local[2]]
+
+        # Propeller 2 (right) coordinates relative to center (0,0)
+        prop2_center_local = [PA, 0.0]
+        prop2_coords_local = [prop2_center_local[1] - PL/2  prop2_center_local[1] + PL/2;
+                              prop2_center_local[2]       prop2_center_local[2]]
+
+        # Rotate and translate
+        body_coords_global = R * body_coords_local .+ [y_pos, z_pos]
+        prop1_coords_global = R * prop1_coords_local .+ [y_pos, z_pos]
+        prop2_coords_global = R * prop2_coords_local .+ [y_pos, z_pos]
+
+        # Plotting
+        plot!(p, body_coords_global[1,:], body_coords_global[2,:], seriestype=:shape, c=color, label="", fillalpha=0.5, linealpha=0.8, linewidth=2)
+        plot!(p, prop1_coords_global[1,:], prop1_coords_global[2,:], seriestype=:line, c=color, linewidth=5, label="")
+        plot!(p, prop2_coords_global[1,:], prop2_coords_global[2,:], seriestype=:line, c=color, linewidth=5, label="")
+    end
+end
+
 # ╔═╡ b73b1d0a-d334-11f0-b11e-6b4049c422d0
 md"## Simulation"
 
@@ -222,26 +356,68 @@ md"## Interactive Comparison"
 
 # ╔═╡ b73b1d2a-d334-11f0-8674-2b4d2873db64
 begin
-    @bind x0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0)
-    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0)
-    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5)
+    @bind controller_choice PlutoUI.Radio(["LQR", "Feedback Linearization"], default="LQR")
+    @bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Y Position (m)")
+    @bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true, title="Initial Z Position (m)")
+    @bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true, title="Initial Angle (rad)")
+    @bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Y Position (m)")
+    @bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true, title="Goal Z Position (m)")
 end
 
 
 # ╔═╡ b73b1d32-d334-11f0-a406-2f5eae2c8365
 begin
-    x0_vec = [x0_slider, z0_slider, theta0_slider, 0.0, 0.0, 0.0]
-    t_span = (0.0, 10.0)
-    r = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # Reference is the origin (hover)
+    x0_vec = [y0_slider, z0_slider, theta0_slider, 0.0, 0.0, 0.0]
+    r_goal = [y_goal_slider, z_goal_slider, 0.0, 0.0, 0.0, 0.0]
+    t_span = (0.0, 10.0) # Simulation time
 
-    sol_lqr = simulate(lqr_controller, x0_vec, t_span, r)
-    sol_fl = simulate(feedback_linearization_controller, x0_vec, t_span, r)
+    current_controller = if controller_choice == "LQR"
+        lqr_controller
+    else
+        feedback_linearization_controller
+    end
 
-    p = plot(sol_lqr, vars=(1, 2), xlabel="x (m)", ylabel="z (m)", label="LQR", legend=:bottomright, title="Quadrotor Trajectories")
-    plot!(p, sol_fl, vars=(1, 2), label="Feedback Linearization")
-    scatter!(p, [x0_vec[1]], [x0_vec[2]], label="Initial Position", markersize=5)
+    sol = simulate(current_controller, x0_vec, t_span, r_goal)
 
-    p
+    # Determine plot limits for animation
+    y_min, y_max = extrema(sol[1,:])
+    z_min, z_max = extrema(sol[2,:])
+    
+    # Add some padding to the limits
+    padding_y = (y_max - y_min) * 0.2 + 1.0
+    padding_z = (z_max - z_min) * 0.2 + 1.0
+    plot_y_min, plot_y_max = y_min - padding_y, y_max + padding_y
+    plot_z_min, plot_z_max = z_min - padding_z, z_max + padding_z
+    
+    # Ensure z-axis is always positive or reasonable for quadrotor flight
+    plot_z_min = min(plot_z_min, -0.5) # Allow for slight dips below 0 if necessary
+    if plot_z_max < 1.0
+        plot_z_max = 1.0 # Ensure some visible space above 0
+    end
+
+
+    anim = @animate for t in sol.t
+        idx = findfirst(x -> x >= t, sol.t)
+        current_state = sol[:,idx]
+        y_pos, z_pos, theta_ori = current_state[1], current_state[2], current_state[3]
+
+        p_frame = plot(xlabel="Y (m)", ylabel="Z (m)", 
+                       xlim=(plot_y_min, plot_y_max), ylim=(plot_z_min, plot_z_max),
+                       aspect_ratio=:equal, legend=:bottomright, 
+                       title="Quadrotor Trajectory with $(controller_choice) - Time: $(round(t, digits=2))s")
+        
+        # Plot trajectory up to current time
+        plot!(p_frame, sol[1,1:idx], sol[2,1:idx], label="$(controller_choice) Path", linecolor=:blue, linewidth=2)
+        
+        # Draw quadrotor at current position
+        draw_quadrotor!(p_frame, y_pos, z_pos, theta_ori, :red)
+
+        # Plot initial and goal positions
+        scatter!(p_frame, [y0_slider], [z0_slider], label="Start", markersize=5, color=:green, shape=:circle)
+        scatter!(p_frame, [y_goal_slider], [z_goal_slider], label="Goal", markersize=5, color=:gold, shape=:star)
+    end
+    
+    gif(anim, "quadrotor_animation_$(controller_choice).gif", fps=15)
 end
 
 

@@ -1,10 +1,14 @@
 # Comparative Control Analysis of a 6-DOF Planar Quadrotor
 
-This project demonstrates and compares two control strategies for a 6-DOF planar quadrotor:
-1.  **LQR (Linear-Quadratic Regulator) Control:** A linear control technique based on a linearized model of the system.
-2.  **Feedback Linearization:** A nonlinear control technique that exactly linearizes the system dynamics.
+This project demonstrates and compares two control strategies for a 6-DOF planar quadrotor. The Julia implementation of **Feedback Linearization** in `quadrotor_simulation.jl` has been updated to align more closely with the theoretical principles demonstrated in the companion MATLAB code, providing a more rigorous application of the technique.
 
 The simulation is implemented in a Pluto.jl notebook, providing an interactive environment to explore and compare the performance of these controllers.
+
+## Live Demo (GitHub Pages)
+
+You can access a static HTML version of the `quadrotor_simulation.jl` notebook, including all visualizations and results, directly online via GitHub Pages:
+
+[Link to GitHub Pages will go here, once deployed]
 
 ## Project Goal
 
@@ -34,7 +38,7 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
     Pkg.instantiate()
     ```
 
-### Running the Simulation
+### Running the Interactive Notebook
 
 1.  **Start Pluto.jl:**
     In the Julia REPL, run the following command:
@@ -50,6 +54,14 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
 3.  **Interact with the simulation:**
     Use the sliders to adjust the initial position (`x0`, `z0`) and attitude (`theta0`) of the quadrotor. The plot will update in real-time to show the resulting trajectories for both LQR and Feedback Linearization controllers.
 
+### Generating Static HTML (Optional)
+
+If you wish to generate an updated static HTML version of the notebook for local viewing or hosting, follow these steps:
+
+1.  Open `quadrotor_simulation.jl` in Pluto.
+2.  From the Pluto UI, go to "Export" and select "Static HTML".
+3.  Save the generated `quadrotor_simulation.html` file into the `docs/` directory of this repository. This file can then be hosted as a static website (e.g., using GitHub Pages).
+
 ## Controllers
 
 ### LQR Controller
@@ -58,21 +70,21 @@ The LQR controller is designed based on a linearization of the system around the
 
 ### Feedback Linearization Controller
 
-Feedback linearization is a nonlinear control technique that algebraically transforms the nonlinear system dynamics into a fully linear one. This allows for the application of linear control techniques to the exact, nonlinear system, providing better performance over a wider range of operating conditions.
+Feedback linearization is a nonlinear control technique that algebraically transforms the nonlinear system dynamics into a fully linear one. This allows for the application of linear control techniques to the exact, nonlinear system, providing better performance over a wider range of operating conditions. The implementation in `quadrotor_simulation.jl` now reflects a more detailed application of this technique, consistent with the reference MATLAB implementation.
 
 ## Project Structure
 
-- `quadrotor_simulation.jl`: The main Pluto.jl notebook containing the LQR and Feedback Linearization controller designs, simulation, and interactive comparison.
+- `quadrotor_simulation.jl`: The main Pluto.jl notebook containing the LQR and updated Feedback Linearization controller designs, simulation, and interactive comparison.
 - `Project.toml`: Specifies the Julia package dependencies for this project.
 - `Manifest.toml`: Contains the exact versions of the dependencies, ensuring reproducibility.
-- `matlab_implementation/`: Contains the original MATLAB implementation which was used as a reference.
+- `matlab_implementation/`: Contains the original MATLAB implementation which was used as a reference for the feedback linearization update.
+- `docs/quadrotor_simulation.html`: The static HTML export of the Pluto notebook, hosted on GitHub Pages.
 - `projecct_proposal.pdf`: The original project proposal outlining the goals and motivation for the control system analysis.
 
 ## Next Steps
 
 This project can be extended in several ways:
 
--   **Deploy as a Web Applet:** Export the Pluto notebook to a static HTML file to be hosted on GitHub Pages, making it accessible to anyone without needing to install Julia.
 -   **Add Trajectory Tracking:** Implement trajectory tracking capabilities for the feedback linearization controller to follow a given path.
 -   **Robustness Analysis:** Investigate the robustness of the controllers to model uncertainties and external disturbances.
 -   **Extend to 3D:** Extend the simulation and control design to a full 3D quadrotor model.

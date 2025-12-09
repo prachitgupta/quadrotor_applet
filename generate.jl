@@ -12,6 +12,8 @@ function build()
             OUTPUT_DIR
         )
     )
+    # Rename the output file to index.html for GitHub Pages
+    mv(joinpath(OUTPUT_DIR, "quadrotor_simulation.html"), joinpath(OUTPUT_DIR, "index.html"))
     println("Build complete!")
 end
 

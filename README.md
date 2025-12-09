@@ -54,14 +54,6 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
 3.  **Interact with the simulation:**
     Use the sliders to adjust the initial position (`x0`, `z0`) and attitude (`theta0`) of the quadrotor. The plot will update in real-time to show the resulting trajectories for both LQR and Feedback Linearization controllers. Note : Feedback linearisation controller converges to singularity with large values of z0 
 
-### Generating Static HTML (Optional)
-
-If you wish to generate an updated static HTML version of the notebook for local viewing or hosting, follow these steps:
-
-1.  Open `quadrotor_simulation.jl` in Pluto.
-2.  From the Pluto UI, go to "Export" and select "Static HTML".
-3.  Save the generated `quadrotor_simulation.html` file into the `docs/` directory of this repository. This file can then be hosted as a static website (e.g., using GitHub Pages).
-
 ## Controllers
 
 ### LQR Controller

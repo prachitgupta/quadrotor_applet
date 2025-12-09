@@ -5,6 +5,7 @@
 The planar quadrotor represents a fundamental **underactuated system** where horizontal motion is achieved indirectly through attitude changes. This coupling between lateral position and pitch angle presents significant control challenges, making it an ideal platform to compare linear and nonlinear control techniques. Understanding the **limitationgs of linearization-based methods** versus **exact feedback linearization** provides crucial insights for real-world autonomous flight applications.
 
 ## System Description
+![](./image/schematic.png)
 
 We consider a 6-DOF planar quadrotor with **state vector** x = [y, z, theta, y_dot, z_dot, theta_dot]^T and **control inputs** u = [F, M]^T (thrust and torque).
 

@@ -26,8 +26,8 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
-    cd <repository-name>
+    git clone https://github.com/prachitgupta/quadrotor_applet.git
+    cd quadrotor_applet
     ```
 
 2.  **Install the required Julia packages:**
@@ -52,7 +52,7 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
     In the Pluto.jl interface, open the `quadrotor_simulation.jl` file from the project directory.
 
 3.  **Interact with the simulation:**
-    Use the sliders to adjust the initial position (`x0`, `z0`) and attitude (`theta0`) of the quadrotor. The plot will update in real-time to show the resulting trajectories for both LQR and Feedback Linearization controllers.
+    Use the sliders to adjust the initial position (`x0`, `z0`) and attitude (`theta0`) of the quadrotor. The plot will update in real-time to show the resulting trajectories for both LQR and Feedback Linearization controllers. Note : Feedback linearisation controller converges to singularity with large values of z0 
 
 ### Generating Static HTML (Optional)
 
@@ -78,5 +78,4 @@ Feedback linearization is a nonlinear control technique that algebraically trans
 - `Project.toml`: Specifies the Julia package dependencies for this project.
 - `Manifest.toml`: Contains the exact versions of the dependencies, ensuring reproducibility.
 - `matlab_implementation/`: Contains the original MATLAB implementation which was used as a reference for the feedback linearization update.
-- `docs/quadrotor_simulation.html`: The static HTML export of the Pluto notebook, hosted on GitHub Pages.
 - `projecct_proposal.pdf`: The original project proposal outlining the goals and motivation for the control system analysis.

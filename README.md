@@ -40,7 +40,7 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
 
 ### Running the Interactive Notebook
 
-1.  **Start Pluto.jl:**
+1.  **Start Pluto.jl (command : "julia" in y0ur command prpompt"):**
     In the Julia REPL, run the following command:
     ```julia
     using Pluto

@@ -31,7 +31,7 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
     ```
 
 2.  **Install the required Julia packages:**
-    Open a Julia REPL in the project directory and run the following commands:
+    Open a Julia REPL (command : **julia** in your command prpompt") in the project directory and run the following commands:
     ```julia
     using Pkg
     Pkg.activate(".")
@@ -40,7 +40,7 @@ To run the interactive simulation, you will need to have Julia and Pluto.jl inst
 
 ### Running the Interactive Notebook
 
-1.  **Start Pluto.jl (command : "julia" in your command prpompt"):**
+1.  **Start Pluto.jl :**
     In the Julia REPL, run the following command:
     ```julia
     using Pluto

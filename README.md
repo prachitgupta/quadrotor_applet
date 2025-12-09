@@ -8,7 +8,7 @@ The simulation is implemented in a Pluto.jl notebook, providing an interactive e
 
 You can access a static HTML version of the `quadrotor_simulation.jl` notebook, including all visualizations and results, directly online via GitHub Pages:
 
-[Link to GitHub Pages will go here, once deployed]
+[(https://prachitgupta.github.io/quadrotor_applet_github/quadrotor_simulation.html)]
 
 ## Project Goal
 

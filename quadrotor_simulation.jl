@@ -24,7 +24,6 @@ begin
 	            using DifferentialEquations
 	            using Plots
 	            md"# Control Analysis of a 3-DOF Planar Quadrotor System
-	This applet is designed to demonstrate control systems fundamentals, system dynamics, Lyapunov stability analysis, and the mathematical formulation of controllers like LQR and feedback linearization using an underactuated planar quadrotor system as a simulation testbed
 	"
 end
 
@@ -53,9 +52,11 @@ begin
 end
 
 
-# ╔═╡ b73b1cce-d334-11f0-b624-cbadaea34f19
+# ╔═╡ 883c00a5-3cc6-4778-82c0-caa047d2f032
 md"""
 ## System Dynamics
+
+![Quadrotor Diagram](https://raw.githubusercontent.com/prachitgupta/quadrotor_applet/main/images/schematic.png)
 
 The equations of motion are:
 
@@ -392,15 +393,16 @@ md"## Interactive Comparison"
 
 # ╔═╡ b73b1d2a-d334-11f0-8674-2b4d2873db64
 md"""
-Initial Y Position (m): $(@bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true))
 
-Initial Z Position (m): $(@bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true))
+Initial Y Position (m): $(@bind y0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true))
 
-Initial Angle (rad): $(@bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.5, show_value=true))
+Initial Z Position (m): $(@bind z0_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true))
 
-Goal Y Position (m): $(@bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true))
+Initial Angle (rad): $(@bind theta0_slider PlutoUI.Slider(-pi:0.1:pi, default=0.0, show_value=true))
 
-Goal Z Position (m): $(@bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=0.0, show_value=true))
+Goal Y Position (m): $(@bind y_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true))
+
+Goal Z Position (m): $(@bind z_goal_slider PlutoUI.Slider(-5.0:0.1:5.0, default=1.0, show_value=true))
 """
 
 
@@ -3435,27 +3437,27 @@ version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═b73b1c74-d334-11f0-8ca7-d3b012c552ea
-# ╠═b23d93b7-b5b7-4a9c-90ff-324bfb9a2651
-# ╠═b73b1cc4-d334-11f0-ab0f-bd913350d1bd
-# ╠═b73b1cc4-d334-11f0-990a-b71c6c207d24
-# ╠═b73b1cce-d334-11f0-b624-cbadaea34f19
-# ╠═92b0f208-f481-4f3e-ab37-cebe3dd88bbc
-# ╠═b73b1cf6-d334-11f0-a649-57d70532cf4f
-# ╠═dba416d1-1118-413b-a355-215b31d29247
-# ╠═b73b1d00-d334-11f0-99ae-794d3ac300fb
-# ╠═b73b1d00-d334-11f0-9895-fdc71285f626
-# ╠═b73b1d0a-d334-11f0-8595-a32dfd67de55
-# ╠═442e2835-e79e-4aaa-9952-b525dad81e7b
-# ╠═b73b1d0a-d334-11f0-91e4-158bb91b2078
-# ╠═c3845f7e-9ccc-46e0-8253-51f302d3d5d0
-# ╠═b73b1d0a-d334-11f0-b11e-6b4049c422d0
-# ╠═b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
-# ╠═b73b1d2a-d334-11f0-9c70-ef1d46d46fad
-# ╠═b73b1d2a-d334-11f0-8674-2b4d2873db64
-# ╠═dfe9afb8-096c-46c7-a527-aa43c17c98ad
-# ╠═1f9d4fe3-f35e-45b5-9c90-fd6b17c3e585
-# ╠═6c6c6c6c-6c6c-6c6c-6c6c-6c6c6c6c6c6c
-# ╠═31726dfd-b1ab-4dbe-80c6-61e4af78ea13
+# ╟─b73b1c74-d334-11f0-8ca7-d3b012c552ea
+# ╟─b23d93b7-b5b7-4a9c-90ff-324bfb9a2651
+# ╟─b73b1cc4-d334-11f0-ab0f-bd913350d1bd
+# ╟─b73b1cc4-d334-11f0-990a-b71c6c207d24
+# ╟─883c00a5-3cc6-4778-82c0-caa047d2f032
+# ╟─92b0f208-f481-4f3e-ab37-cebe3dd88bbc
+# ╟─b73b1cf6-d334-11f0-a649-57d70532cf4f
+# ╟─dba416d1-1118-413b-a355-215b31d29247
+# ╟─b73b1d00-d334-11f0-99ae-794d3ac300fb
+# ╟─b73b1d00-d334-11f0-9895-fdc71285f626
+# ╟─b73b1d0a-d334-11f0-8595-a32dfd67de55
+# ╟─442e2835-e79e-4aaa-9952-b525dad81e7b
+# ╟─b73b1d0a-d334-11f0-91e4-158bb91b2078
+# ╟─c3845f7e-9ccc-46e0-8253-51f302d3d5d0
+# ╟─b73b1d0a-d334-11f0-b11e-6b4049c422d0
+# ╟─b73b1d1e-d334-11f0-8f2a-aba8e0129fbb
+# ╟─b73b1d2a-d334-11f0-9c70-ef1d46d46fad
+# ╟─b73b1d2a-d334-11f0-8674-2b4d2873db64
+# ╟─dfe9afb8-096c-46c7-a527-aa43c17c98ad
+# ╟─1f9d4fe3-f35e-45b5-9c90-fd6b17c3e585
+# ╟─6c6c6c6c-6c6c-6c6c-6c6c-6c6c6c6c6c6c
+# ╟─31726dfd-b1ab-4dbe-80c6-61e4af78ea13
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
